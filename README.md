@@ -177,7 +177,7 @@ I also want to ssh to a server as a `jenkins user` from my local machine (by def
 
 - `-v jenkins_home:/var/jenkins_home`: This will automatically create a `'jenkins_home'` docker volume on the host machine. Docker volumes retain their content even when the container is stopped, started, or deleted.
 
-![Screenshot 2025-06-16 at 13 58 45](https://github.com/user-attachments/assets/badd13a3-7e52-4cd1-90ec-19c8e5f4e857)
+![Screenshot 2025-06-16 at 13 49 36](https://github.com/user-attachments/assets/f813d0e0-2b9a-4c58-90cd-3a00713b7440)
 
 I will use `docker ps` if the container is running 
 
@@ -185,7 +185,7 @@ To check if the container running : `docker logs [container-id]`
 
 To see Jenkins Process is running on the Server : `ps aux | grep jenkins`
 
-![Screenshot 2025-06-16 at 13 49 36](https://github.com/user-attachments/assets/f813d0e0-2b9a-4c58-90cd-3a00713b7440)
+![Screenshot 2025-06-16 at 13 58 45](https://github.com/user-attachments/assets/badd13a3-7e52-4cd1-90ec-19c8e5f4e857)
 
 To see Active Connection on my Server : `netstat -ltpn` (I need to install net-tools in order to use netstat) : `apt install net-tools`
 
