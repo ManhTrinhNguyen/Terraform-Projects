@@ -2,7 +2,8 @@
 
 - [Build Dockerfile for Java Maven Application](#Build-Dockerfile-for-Java-Maven-Application)
 
-
+- [Build Jenkins CI CD pipeline](#Build-Jenkins-CI-CD-pipeline)
+  
 ## Complete CI/CD with Terraform
 
 #### Technologies used:
@@ -67,30 +68,38 @@ FROM amazoncorretto:8-alpine3.19-jre
 
 EXPOSE 8080
 
-COPY ./target/java-maven-app-*.jar /usr/app/
+COPY ./target/java-maven-app-*.jar /usr/app/app.jar
 
 WORKDIR /usr/app
 
-CMD [ "java", "-jar", "java-maven-app-*.jar"]
+CMD [ "java", "-jar", "app.jar"]
 ```
 
 `FROM amazoncorretto:8-alpine3.19-jre`: I start to build a Image from a Based Java Image amazoncorretto (https://hub.docker.com/_/amazoncorretto)
 
 `EXPOSE 8080`: My Java app is listening on port 8080 
 
-`COPY ./target/java-maven-app-*.jar /usr/app/`: From the Location of Dockefile I will copy a JAR file into a container location is `/usr/app` 
+`COPY ./target/java-maven-app-*.jar /usr/app/app.jar`: From the Location of Dockefile I will copy a JAR file into a container location is `/usr/app` also rename it into `app.jar` 
 
 `WORKDIR /usr/app`: Make sure the conainter run at this Folder 
 
-`CMD [ "java", "-jar", "java-maven-app-*.jar"]`: Run a Command inside a container . CMD is to execute Entry point  
+`CMD [ "java", "-jar", "app.jar"]`: Run a Command inside a container . CMD is to execute Entry point  
 
+From my Local Machine I will test building a Docker image and run it . 
 
+- I am using Mac so I need to install Docker Desktop
 
+- To build a Docker image : `docker build <app-repo>:<appname> .`
+  
+![Screenshot 2025-06-16 at 13 05 10](https://github.com/user-attachments/assets/62c64f5c-e0bd-450f-8cec-e35c60461767)
 
+- To run a Image locally : `docker run -p 8080:8080 java-maven`
 
+  - Port `8080:8080`: The first one is to expose from the host . The second one is to expost from the container 
 
+![Screenshot 2025-06-16 at 13 06 12](https://github.com/user-attachments/assets/97bb9e87-f024-4334-800d-13e370320509)
 
-
+Once everything work locally I can start to build a CI/CD pipeline to automatically build for me 
 
 
 
