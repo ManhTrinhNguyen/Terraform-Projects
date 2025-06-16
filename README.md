@@ -3,6 +3,8 @@
 - [Build Dockerfile for Java Maven Application](#Build-Dockerfile-for-Java-Maven-Application)
 
 - [Build Jenkins CI CD pipeline](#Build-Jenkins-CI-CD-pipeline)
+
+  - [Create a Server for Jenkins on Digital Ocean](#Create-a-Server-for-Jenkins-on-Digital-Ocean) 
   
 ## Complete CI/CD with Terraform
 
@@ -100,6 +102,38 @@ From my Local Machine I will test building a Docker image and run it .
 ![Screenshot 2025-06-16 at 13 06 12](https://github.com/user-attachments/assets/97bb9e87-f024-4334-800d-13e370320509)
 
 Once everything work locally I can start to build a CI/CD pipeline to automatically build for me 
+
+## Build Jenkins CI CD pipeline 
+
+#### Create a Server for Jenkins on Digital Ocean
+
+Before start I should have a account in Digital Ocean 
+
+Go to Create Droplet . I will configure Region, Image, Size Disk, and Create an SSH key to connect to Digital Ocean 
+
+To create a new ssh key . In my terminal : `ssh-keygen`
+
+- I will be prompted to save and name the key.
+
+- Next I will be asked to create and confirm a passphrase for the key (highly recommended)
+
+- This will generate two files, by default called `id_rsa` and `id_rsa.pub` in `.ssh` folder.  Next, add this public key.
+
+- Copy and paste the contents of the `.pub` file to Digital Ocean : `cat ~/.ssh/id_rsa.pub`
+
+I need to configure Firewall to prevent everyone can access into my server
+
+- I need to open Port 22 for ssh
+
+- And open port 8081 for Jenkins Application
+
+![Screenshot 2025-06-16 at 13 20 49](https://github.com/user-attachments/assets/76c99e58-2750-411b-8e91-75d3659db049)
+
+Now I can ssh into a server `ssh -i ~/.ssh/id_rsa root@<Ip address>`
+
+![Screenshot 2025-06-16 at 13 22 05](https://github.com/user-attachments/assets/758211eb-6fe8-4e62-ac59-fd545d04f71c)
+
+
 
 
 
