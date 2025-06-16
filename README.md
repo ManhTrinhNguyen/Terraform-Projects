@@ -4,7 +4,9 @@
 
 - [Build Jenkins CI CD pipeline](#Build-Jenkins-CI-CD-pipeline)
 
-  - [Create a Server for Jenkins on Digital Ocean](#Create-a-Server-for-Jenkins-on-Digital-Ocean) 
+  - [Create a Server for Jenkins on Digital Ocean](#Create-a-Server-for-Jenkins-on-Digital-Ocean)
+ 
+  - [Run Jenkins as a Docker Container](#Run-Jenkins-as-a-Docker-Container)
   
 ## Complete CI/CD with Terraform
 
@@ -125,20 +127,75 @@ I need to configure Firewall to prevent everyone can access into my server
 
 - I need to open Port 22 for ssh
 
-- And open port 8081 for Jenkins Application
+- And open port 8080 for Jenkins Application
 
-![Screenshot 2025-06-16 at 13 20 49](https://github.com/user-attachments/assets/76c99e58-2750-411b-8e91-75d3659db049)
+![Screenshot 2025-06-16 at 13 42 42](https://github.com/user-attachments/assets/e15f3e88-b1e0-4668-8754-9571bca39fce)
 
 Now I can ssh into a server `ssh -i ~/.ssh/id_rsa root@<Ip address>`
 
 ![Screenshot 2025-06-16 at 13 22 05](https://github.com/user-attachments/assets/758211eb-6fe8-4e62-ac59-fd545d04f71c)
 
+To update a Server Package Manager : `apt update`
 
+- apt is an package manager for Ubuntu 
 
+#### Run Jenkins as a Docker Container
 
+To install Docker `apt install docker.io`
 
+I need to create another user named `jenkins` to run a Jenkins Application . 
 
+- Best Practice Security : Never run Services as a Root User 
 
+To create `jenkins` user : `adduser jenkins`
+
+- This command will create a jenkins user also a jenkins group
+
+I want `jenkin user` can execute command which root can do . I will add `sudo` group to `jenkins user` : `usermod -aG sudo jenkins`
+
+Also I want `jenkins` can execute docker command without using `sudo` I will also add `docker group` to `jenkins user` : `usermode -aG docker jenkins`
+
+Now I can switch to `jenkins user`: `su - jenkins`
+
+I also want to ssh to a server as a `jenkins user` from my local machine (by default I can not) 
+
+- I need to take a public ssh key from my local machine `cat ~/.ssh/id_rsa.pub` and copy it into a `jenkins user` server at a `~/.ssh/authorized_keys` file
+
+- I need to create this `~/.ssh/authorized_keys` file inside `jenkins user` server 
+
+- Now I can ssh to a server as a `jenkins user`
+
+**Jenkins Image Docs** (https://github.com/jenkinsci/docker/blob/master/README.md)
+
+**Run Docker Container** : `docker run -d -p 8080:8080 -p 50000:50000 -v jenkins_home:/var/jenkins_home jenkins/jenkins`
+
+- `-d` : Run as detach mode
+
+- `-p 8080:8080`: Open port 8080 for the Host and the Container
+
+- `-p 50000:50000`: This is for Jenkins Agents (slave) connections
+
+- `-v jenkins_home:/var/jenkins_home`: This will automatically create a `'jenkins_home'` docker volume on the host machine. Docker volumes retain their content even when the container is stopped, started, or deleted.
+
+I will use `docker ps` if the container is running 
+
+To check if the container running : `docker logs [container-id]`
+
+To see Jenkins Process is running on the Server : `ps aux | grep jenkins`
+
+![Screenshot 2025-06-16 at 13 58 45](https://github.com/user-attachments/assets/badd13a3-7e52-4cd1-90ec-19c8e5f4e857)
+
+![Screenshot 2025-06-16 at 13 49 36](https://github.com/user-attachments/assets/f813d0e0-2b9a-4c58-90cd-3a00713b7440)
+
+To see Active Connection on my Server : `netstat -ltpn` (I need to install net-tools in order to use netstat) : `apt install net-tools`
+
+- Now I can see a port 50000 and 8080 and 22 open on the Server
+  
+![Screenshot 2025-06-16 at 14 00 47](https://github.com/user-attachments/assets/ba6ae5f5-f98c-460f-9df3-684120c23946)
+
+Once success I start access it from the UI using `public-ip:port` -> `165.232.141.93:8080/`
+
+<img width="500" alt="Screenshot 2025-06-16 at 13 55 35" src="https://github.com/user-attachments/assets/870d8963-6db7-4345-889d-375a1d6781dc" />
 
 
 
