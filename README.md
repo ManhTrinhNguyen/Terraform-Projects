@@ -2,11 +2,13 @@
 
 - [Build Dockerfile for Java Maven Application](#Build-Dockerfile-for-Java-Maven-Application)
 
-- [Build Jenkins CI CD pipeline](#Build-Jenkins-CI-CD-pipeline)
+- [Set up Jenkins CI CD pipeline](#Build-Jenkins-CI-CD-pipeline)
 
   - [Create a Server for Jenkins on Digital Ocean](#Create-a-Server-for-Jenkins-on-Digital-Ocean)
  
   - [Run Jenkins as a Docker Container](#Run-Jenkins-as-a-Docker-Container)
+ 
+  - [Install Docker inside Jenkins container](#Install-Docker-inside-Jenkins-container)
   
 ## Complete CI/CD with Terraform
 
@@ -105,7 +107,7 @@ From my Local Machine I will test building a Docker image and run it .
 
 Once everything work locally I can start to build a CI/CD pipeline to automatically build for me 
 
-## Build Jenkins CI CD pipeline 
+## Set up Jenkins CI CD pipeline 
 
 #### Create a Server for Jenkins on Digital Ocean
 
@@ -196,6 +198,54 @@ To see Active Connection on my Server : `netstat -ltpn` (I need to install net-t
 Once success I start access it from the UI using `public-ip:port` -> `165.232.141.93:8080/`
 
 <img width="500" alt="Screenshot 2025-06-16 at 13 55 35" src="https://github.com/user-attachments/assets/870d8963-6db7-4345-889d-375a1d6781dc" />
+
+#### Install Docker inside Jenkins container
+
+Most of scenerio I will need to build Docker Image in Jenkins . That mean I need Docker Command in Jenkins . The way to do that is attaching a volume to Jenkins from the host file
+
+  - In the Server (Droplet itself) I have Docker command available, I will mount Docker directory from Droplet into a Container as a volume . This will make Docker available inside the container
+
+  - To do that I first need to kill current Container and create a new : `docker stop <container-id>`
+
+  - Check the volume : `docker ls volume` . All the data from the container before will be persist in here and I can use that to create a new Container
+
+  - Start a new container : `docker run -d -p 8080:8080 -p 50000:50000 -v jenkins_home:/var/jenkins_home -v /var/run/docker.sock:/var/run/docker.sock jenkins/jenkins:lts`
+
+    -  /var/run/docker.sock:/var/run/docker.sock : I mount a Docker from Droplet to inside Jenkins
+   
+  - Get inside Jenkins as Root : `docker exec -it -u 0 <container_id> bash`
+
+    - Things need to fix :
+
+      - `curl https://get.docker.com/ > dockerinstall && chmod 777 dockerinstall && ./dockerinstall` . With this Curl command Jenkins container is going to fetch the latest Version of Docker from official size so it can run inside the container, then I will set correct permission the run through the Install
+      - Set correct Permission on `docker.sock` so I can run command inside the container as Jenkins User  `chmod 666 /var/run/docker.sock`: docker.sock is a Unix socket file used by Docker daemon to communicate with Docker Client
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
