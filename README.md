@@ -9,6 +9,25 @@
   - [Run Jenkins as a Docker Container](#Run-Jenkins-as-a-Docker-Container)
  
   - [Install Docker inside Jenkins container](#Install-Docker-inside-Jenkins-container)
+
+  - [Install Stage View Plugin](#Install-Stage-View-Plugin)
+ 
+- [Terraform](#Terraform)
+
+  - [Configure AWS Provider](#Configure-AWS-Provider) 
+
+  - [Provision AWS Infrastructure](#Provision-AWS-Infrastructure)
+ 
+  - [Create VPC and Subnet](#Create-VPC-and-Subnet)
+ 
+  - [Provision Route Table](#Provision-Route-Table)
+ 
+  - [Connect VPC to Internet using Internet Gateway](#Connect-this-VPC-to-Internet-using-Internet-Gateway)
+ 
+  - [Provision Security Group](#Provision-Security-Group)
+ 
+  - [Subnet Association with Route Table](#Subnet-Association-with-Route-Table)
+ 
   
 ## Complete CI/CD with Terraform
 
@@ -224,17 +243,219 @@ Most of scenerio I will need to build Docker Image in Jenkins . That mean I need
       - Set correct Permission on `docker.sock` so I can run command inside the container as Jenkins User  `chmod 666 /var/run/docker.sock`: docker.sock is a Unix socket file used by Docker daemon to communicate with Docker Client
 
 
+#### Install Stage View Plugin
+
+This Plugins help me see diffent stage defined in the UI . This mean Build Stage, Test, Deploy will displayed as separate stage in the UI 
+
+Go to Available Plugin -> Stage View
+
+
+## Terraform 
+
+Create TF project to automate provisioning AWS Infrastructure and its components, such as: VPC, Subnet, Route Table, Internet Gateway, EC2, Security Group
+
+Configure TF script to automate deploying Docker container to EC2 instance
+
+#### Install Terraform 
+
+Terraform installation Docs (https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli)
+
+To install Terraform on MacOS: 
+
+```
+brew tap hashicorp/tap
+brew install hashicorp/tap/terraform
+```
+
+#### Terraform Structure 
+
+I will create a `mkdir terraform` folder in this project 
+
+In terraform folder I will create  `touch main.tf providers.tf variables.tf output.tf`
+
+`main.tf`: Is a acutal configuration file where I put my Desire State in it 
+
+`variables.tf`: Is to define a variables in Terraform . And I can define its values in `terraform.tfvars` . `terraform.tfvars` should be list in `.gitignore`
+
+#### Configure AWS Provider 
+
+Provider is a software that allow me to talk to specific techologies like AWS, Google Cloud etc .... 
 
 
 
+In `terraform` folder I create `touch providers.tf` file 
+
+- To use a Providers I need to provide a Provider like this in `providers.tf`
+
+```
+terraform {
+  required_providers {
+    aws = {
+      source = "hashicorp/aws"
+      version = "6.0.0-beta3"
+    }
+  }
+}
+
+provider "aws" {
+  region = "us-west-1"
+}
+```
+
+- If I need another Provider I can add into a `required_providers` with specific version
+
+- `provider "aws"` I will work on my region `us-west-1` . It also need a Credentials in order to interact with my AWS . I will go to `~/.aws/credentials` and take my credentials from there
+
+  - I can also put a credentials direct in the Block but for Security issue Never do that 
 
 
+To install a Provider : `terraform init` 
 
+- This will generate a `.terraform` folder and `.terraform.lock.hcl` files
 
+  -  `.terraform` folder: This folder contains files downloaded by Terraform, like provider plugins and modules, that Terraform will use to interact with services like AWS. It’s basically the setup that enables Terraform to do its job when applying your infrastructure changes.
+ 
+  -  `.terraform.lock.hcl`: This file keeps track of the exact versions of provider plugins (like AWS) that are installed. It ensures that Terraform always uses the same versions, so your infrastructure behaves consistently across different machines or team members. If you add a new provider, it will show up in this file.
 
+#### Provision AWS Infrastructure 
 
+#### Overview 
 
+I will Deploy EC2 Instances on AWS and I will run a simple Docker Container on it
 
+However before I create that Instance I will Provision AWS Infrastructure for it
+
+To Provision AWS Infrastructure :
+
+- I need create custom VPC
+
+- Inside VPC I will create Subnet in one of AZs, I can create multiple Subnet in each AZ
+
+- Create a Route Table and Subnet Association with Route Table
+
+- Connect this VPC to Internet using Internet Gateway on AWS . Allow traffic to and from VPC with Internet
+
+- And then In this VPC I will deploy an EC2 Instance
+
+- Deploy Nginx Docker container
+
+- Create SG (Firewall) in order to access the nginx server running on the EC2
+
+- Also I want to SSH to my Server. Open port for that SSH as well
+
+#### Create VPC and Subnet 
+
+In `main.tf`
+
+**To create VPC** I will use `resource "aws_vpc"` (https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/vpc))
+
+- I need to configure a `cidr_block` for a VPC .
+
+  - `cidr_block` is a Range of IP address that I assign to my VPC. It use CIDR (Classless Inter-Domain Routing) notation like `10.0.0.0/16` to define the size of private IP address space that my VPC can use 
+
+```
+resource "aws" "my-vpc" {
+  cidr_block = "10.0.0.0/16"
+
+  tag = {
+    Name: "my-vpc"
+  }
+}
+```
+
+**To create Subnet** I will use `resource "aws_subnet"` (https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/subnet)
+
+I need to configure `vpc_id` for my subnet . 
+
+- I want to create my subnet in the VPC that I just created above . So I will give its `vpc_id` to it : `vpc_id     = aws_vpc.main.id`
+
+- I also create a `cidr_block` for it  : `cidr_block = "10.0.1.0/24"`
+
+- I can decide which AZ this Subnet will be in `availability_zone = "us-west-1a"`
+
+```
+resource "aws_subnet" "my_subnet" {
+  vpc_id = aws_vpc.my-vpc.vpc_id
+  cidr_block = "10.0.0.1/24"
+  availability_zone = "us-west-1a"
+
+  tags = {
+    Name: "my-subnet"
+  }
+}
+```
+
+#### Connect VPC to Internet using Internet Gateway
+
+I will provision `resource "aws_internet_gateway"` (https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/internet_gateway)
+
+I need the vpc_id : `vpc_id = aws_vpc.my-vpc.vpc_id`
+
+#### Provision Route Table
+
+Route Table is a Virtual Router in VPC that is a set of Rules that tells my Network where to send traffic
+
+When I click Inside Route Table: (https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route_table)
+
+- I see `Target: Local` and `Destination: 172.31.0.0/16` this mean only route traffic inside VPC within range `172.31.0.0/16`
+
+- And `Target: igw-***` and `Destination: 0.0.0.0/0` This mean my VPC can connect to an Internet
+  
+<img width="600" alt="Screenshot 2025-06-17 at 14 30 35" src="https://github.com/user-attachments/assets/4fec67b9-d359-43e5-969d-3cd25cd135b7" />
+
+I will create a new Route Table to associate with my newly created VPC and Subnet : `resource "aws_route_table"` with:
+
+- Local Target : Connect within VPC
+
+- Internet Gateway: Connect to the Internet
+
+By default the entry for VPC internal routing is configured automatically. So I just need to create the Internet Gateway route
+
+I need to provide `vpc_id = aws_vpc.my-vpc.vpc_id`
+
+And then create a Internet Gateway route by using its ID that I provisioned above 
+
+```
+resource "aws_route_table" "myapp-route-table" {
+vpc_id = aws_vpc.myapp-vpc.id
+
+  route {
+    cidr_block = "0.0.0.0/0" ## Destination . Any IP address can access to my VPC 
+    gateway_id = aws_internet_gateway.myapp-igw.id ## This is a Internet Gateway for my Route Table 
+  }
+
+  tags = {
+    Name = "my-rtb"
+  }
+}
+```
+
+#### Subnet Association with Route Table
+
+I have created a Route Table inside my VPC. However I need to associate Subnet with Route TAble so that Traffic within a Subnet also can handle by Route Table 
+
+By default when I do not associate subnets to a route table they are automatically assigned or associated to the main route table in VPC where the Subnet is running
+
+(https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route_table_association)
+
+I need to provide a subnet_id which I want to associate with
+
+Also the Route Table ID that I provisoned above 
+
+```
+resource "aws_route_table_association" "my-rtb-association" {
+  subnet_id = aws_subnet.my_subnet.subnet_id
+  route_table_id = aws_route_table.my-rtb.id
+}
+```
+
+#### Typical Best Practice Setup:
+
+Create a Public Route Table → route to Internet Gateway → associate with public subnets.
+
+Create a Private Route Table → route to NAT Gateway → associate with private subnets.
+
+Create an Internal Route Table → no external route → for database/backend subnets.
 
 
 
