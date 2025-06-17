@@ -218,6 +218,9 @@ Most of scenerio I will need to build Docker Image in Jenkins . That mean I need
     - Things need to fix :
 
       - `curl https://get.docker.com/ > dockerinstall && chmod 777 dockerinstall && ./dockerinstall` . With this Curl command Jenkins container is going to fetch the latest Version of Docker from official size so it can run inside the container, then I will set correct permission the run through the Install
+
+      - Run `bash ./dockerinstall`  
+      
       - Set correct Permission on `docker.sock` so I can run command inside the container as Jenkins User  `chmod 666 /var/run/docker.sock`: docker.sock is a Unix socket file used by Docker daemon to communicate with Docker Client
 
 
