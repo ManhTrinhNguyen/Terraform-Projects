@@ -7,7 +7,7 @@ resource "aws_vpc" "my-vpc" {
 }
 
 resource "aws_subnet" "my_subnet" {
-  vpc_id = aws_vpc.my-vpc.vpc_id
+  vpc_id = aws_vpc.my-vpc.id
   cidr_block = "10.0.0.0/24"
   availability_zone = "us-west-1a"
 
@@ -17,7 +17,7 @@ resource "aws_subnet" "my_subnet" {
 }
 
 resource "aws_internet_gateway" "my-igw" {
-  vpc_id = aws_vpc.my-vpc.vpc_id
+  vpc_id = aws_vpc.my-vpc.id
 
   tags = {
     Name = "my-igw"
@@ -25,7 +25,7 @@ resource "aws_internet_gateway" "my-igw" {
 }
 
 resource "aws_route_table" "my-rtb" {
-  vpc_id = aws_vpc.my-vpc.vpc_id
+  vpc_id = aws_vpc.my-vpc.id
 
   route {
     cidr_block = "0.0.0.0/0"
@@ -38,6 +38,6 @@ resource "aws_route_table" "my-rtb" {
 }
 
 resource "aws_route_table_association" "my-rtb-association" {
-  subnet_id = aws_subnet.my_subnet.subnet_id
+  subnet_id = aws_subnet.my_subnet.id
   route_table_id = aws_route_table.my-rtb.id
 }
