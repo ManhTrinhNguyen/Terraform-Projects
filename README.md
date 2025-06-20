@@ -461,16 +461,23 @@ Create an Internal Route Table → no external route → for database/backend su
 
 I will use `terraform apply --auto-approve` to execute my infrastructure 
 
+![Screenshot 2025-06-20 at 12 48 51](https://github.com/user-attachments/assets/2be27280-0936-4632-9495-c6f865199d82)
 
+Now I my AWS console I should see my VPC with a new `my-vpc`
 
+![Screenshot 2025-06-20 at 13 03 49](https://github.com/user-attachments/assets/9d5f093a-072c-4db4-af28-c630cfffad12)
 
+My subnet :
 
+<img width="400" alt="Screenshot 2025-06-20 at 13 04 25" src="https://github.com/user-attachments/assets/ba938518-88bd-4fae-8349-b7462169f285" />
 
+My Route table with a `Target: igw-*` and `Target: local` 
 
+<img width="500" alt="Screenshot 2025-06-20 at 13 06 00" src="https://github.com/user-attachments/assets/2888b2d4-859e-4368-bd47-7304bf3f48dc" />
 
+Also my subnet associate with my RTB:
 
-
-
+<img width="500" alt="Screenshot 2025-06-20 at 13 06 34" src="https://github.com/user-attachments/assets/2924fcb2-74c0-4721-bad3-80a4da1bcd61" />
 
 
 
