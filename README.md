@@ -36,7 +36,6 @@
  
   - [Variables](#Variables)
  
-  
 ## Complete CI/CD with Terraform
 
 #### Technologies used:
@@ -633,8 +632,6 @@ env_prefix = "development"
 ```
 
 If my `terraform.tfvars` have another name other than that like `terraform-dev.tfvars` I have to explicity define it in the command like this : `terraform apply --var-file terraform-dev.tfvars`
-
-
 
 
 
