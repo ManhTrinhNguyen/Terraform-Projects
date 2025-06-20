@@ -28,6 +28,14 @@
  
   - [Subnet Association with Route Table](#Subnet-Association-with-Route-Table)
  
+  - [Execute Terraform](#Execute-Terraform)
+ 
+  - [Create Security Group](#Create-Security-Group)
+ 
+  - [Create EC2 Instance](#Create-EC2-Instance)
+ 
+  - [Variables](#Variables)
+ 
   
 ## Complete CI/CD with Terraform
 
@@ -275,7 +283,10 @@ In terraform folder I will create  `touch main.tf providers.tf variables.tf outp
 
 `main.tf`: Is a acutal configuration file where I put my Desire State in it 
 
-`variables.tf`: Is to define a variables in Terraform . And I can define its values in `terraform.tfvars` . `terraform.tfvars` should be list in `.gitignore`
+`variables.tf`: Is to define a variables in Terraform . And I can define its values in `terraform.tfvars` should be list in `.gitignore`
+
+`terraform.tfstate` and `terraform.tfstate.backup` should be list in `.gitignore`
+
 
 #### Configure AWS Provider 
 
@@ -479,15 +490,145 @@ Also my subnet associate with my RTB:
 
 <img width="500" alt="Screenshot 2025-06-20 at 13 06 34" src="https://github.com/user-attachments/assets/2924fcb2-74c0-4721-bad3-80a4da1bcd61" />
 
+#### Create Security Group
 
+I want to Create a SG for my Instance  (https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group)
 
+- To open port 22 to SSH from my local machine
 
+- To open port 8080 for my Application .
 
+```
+resource "aws_security_group" "my-sg" {
+  name = "My SG"
+  description = "Allow SSH for only my Address and Open port 8080 for my Application"
+  vpc_id = aws_vpc.my-vpc.id 
 
+  tags = {
+    Name = "my-sg"
+  }
+}
 
+resource "aws_vpc_security_group_ingress_rule" "allow-SSH" {
+  security_group_id = aws_security_group.my-sg.id
+  cidr_ipv4 = "157.131.152.31/32" # I only allow my ipaddress to SSH to a Server 
+  from_port = 22
+  ip_protocol = "tcp"
+  to_port = 22 
+}
 
+resource "aws_vpc_security_group_ingress_rule" "application-port-8080" {
+  security_group_id = aws_security_group.my-sg.id
+  cidr_ipv4 = "0.0.0.0/0" # I allow every IP address to connect to my Application 
+  from_port = 8080
+  ip_protocol = "tcp"
+  to_port = 8080 
+}
 
+resource "aws_vpc_security_group_egress_rule" "allow-to-egress-to-internet" {
+  security_group_id = aws_security_group.my-sg.id
+  cidr_ipv4 = "0.0.0.0/0" # I allow my Server to egress every where in the Internet 
+  ip_protocol = "tcp"
+  from_port = 0
+  to_port = 0
+}
+```
 
+#### Create EC2 Instance
+
+I will use `resource aws_instance` (https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/instance) to create my ec2 instance 
+
+But first I want to dynamically get an `aws_ami` id bcs for each Region `AMI_ID` might change . I will use `data aws_ami` to query the ami_id (https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/ami)
+
+```
+data "aws_ami" "my-ami" {
+  most_recent = true
+  owners = [ "amazon" ]
+
+  filter {
+    name = "virtualization-type"
+    values = ["hvm"]
+  }
+
+  filter {
+    name = "name"
+    values = ["al2023-ami-*-x86_64"]
+  }
+}
+```
+
+Now this my resource for create EC2 Instance: 
+
+```
+resource "aws_instance" "my-ec2" {
+  ami = data.aws_ami.my-ami.id
+  instance_type = "t3.micro"
+  subnet_id = aws_subnet.my_subnet.id
+  availability_zone = "us-west-1a"
+  vpc_security_group_ids = [ aws_security_group.my-sg.id ]
+
+  associate_public_ip_address = true
+  
+  key_name = "terraform"
+  tags = {
+    Name = "dev-ec2"
+  }
+}
+```
+
+`ami` : This is a ami_id that I query above 
+
+`instance_type`: I choose my instance type is `t3.mircro`
+
+`subnet_id`: I want my EC2 instance launched inside my subnet VPC that I created above 
+
+`availability_zone`: I want my EC2 to launched in specific Zone 
+
+`vpc_security_group_ids`: I apply the secuiry group by using its ID that I create above 
+
+`associate_public_ip_address: true`: I want to it automatically create my IP Public for me to SSH into it . (The Public IP take from the VPC)
+
+`key_name`: This is my key `.pem` for me to ssh to a server
+
+- Make sure to change `.pem` to `chmod 400 ~/.ssh/*.pem` for security  
+
+Now I do `terraform apply --auto-approve` I can see my EC2 instance create inside my Subnet VPC and have a SG applied with it 
+
+<img width="500" alt="Screenshot 2025-06-20 at 14 38 01" src="https://github.com/user-attachments/assets/ae3125c8-066d-42c5-99fd-c2f4cd15aed2" />
+
+<img width="500" alt="Screenshot 2025-06-20 at 14 38 21" src="https://github.com/user-attachments/assets/f28898a1-dc6a-4826-9287-00711d481d7f" />
+
+#### Variables 
+
+Instead of hardcode the Value in the `main.tf` file I want to define a variable for it . 
+
+- I can reuse it for any Configuration file
+
+- I can also dynamic set value for it 
+
+I will create `touch variables.tf` to store the variables 
+
+```
+variables.tf
+
+variable "cidr_block" {}
+variable "availability_zone" {}
+variable "my_ip_address" {}
+variable "instance_type" {}
+```
+
+I will create `touch terraform.tfvars` to put a value into it 
+
+```
+terraform.tfvars
+
+cidr_block = "10.0.0.0/16"
+availability_zone = "us-west-1a"
+my_ip_address = "157.131.152.31/32"
+instance_type = "t3.micro"
+```
+
+If my `terraform.tfvars` have another name other than that like `terraform-dev.tfvars` I have to explicity define it in the command like this : `terraform apply --var-file terraform-dev.tfvars`
 
 
 
