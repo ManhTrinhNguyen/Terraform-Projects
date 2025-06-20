@@ -457,6 +457,12 @@ Create a Private Route Table → route to NAT Gateway → associate with private
 
 Create an Internal Route Table → no external route → for database/backend subnets.
 
+#### Execute Terraform 
+
+I will use `terraform apply --auto-approve` to execute my infrastructure 
+
+
+
 
 
 
