@@ -612,9 +612,11 @@ I will create `touch variables.tf` to store the variables
 variables.tf
 
 variable "cidr_block" {}
+variable "subnet_cidr_block" {}
 variable "availability_zone" {}
 variable "my_ip_address" {}
 variable "instance_type" {}
+variable "env_prefix" {}
 ```
 
 I will create `touch terraform.tfvars` to put a value into it 
@@ -623,9 +625,11 @@ I will create `touch terraform.tfvars` to put a value into it
 terraform.tfvars
 
 cidr_block = "10.0.0.0/16"
+subnet_cidr_block = "10.0.0.0/24"
 availability_zone = "us-west-1a"
 my_ip_address = "157.131.152.31/32"
 instance_type = "t3.micro"
+env_prefix = "development"
 ```
 
 If my `terraform.tfvars` have another name other than that like `terraform-dev.tfvars` I have to explicity define it in the command like this : `terraform apply --var-file terraform-dev.tfvars`
