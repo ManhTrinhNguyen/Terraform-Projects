@@ -706,6 +706,13 @@ resource "aws_instance" "my-ec2" {
 }
 ```
 
+Now I will `terraform destroy --auto-approve` and `terraform apply --auto-approve` it again I should see my Nginx container running
+
+![Screenshot 2025-06-22 at 13 00 30](https://github.com/user-attachments/assets/b1a000bf-c640-43c4-9f04-f60d31b4b256)
+
+<img width="706" alt="Screenshot 2025-06-22 at 13 01 14" src="https://github.com/user-attachments/assets/5a73a2ba-4823-42d6-b617-9964daebeddc" />
+
+
 
 
 
