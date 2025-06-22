@@ -616,6 +616,7 @@ variable "availability_zone" {}
 variable "my_ip_address" {}
 variable "instance_type" {}
 variable "env_prefix" {}
+variable "my_key_name" {}
 ```
 
 I will create `touch terraform.tfvars` to put a value into it 
@@ -629,9 +630,30 @@ availability_zone = "us-west-1a"
 my_ip_address = "157.131.152.31/32"
 instance_type = "t3.micro"
 env_prefix = "development"
+my_key_name = "terraform"
 ```
 
 If my `terraform.tfvars` have another name other than that like `terraform-dev.tfvars` I have to explicity define it in the command like this : `terraform apply --var-file terraform-dev.tfvars`
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
