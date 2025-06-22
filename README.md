@@ -288,6 +288,14 @@ In terraform folder I will create  `touch main.tf providers.tf variables.tf outp
 
 `terraform.tfstate` and `terraform.tfstate.backup` should be list in `.gitignore`
 
+`.gitignore`:
+
+- Ignore .`terraform/*` folder . Doesn't have to part of the code bcs when I do terraform init it will be downloaded on my computer locally
+
+- Ignore `*.tfstate`, `*.tfstate.*` bcs Terraform is a generated file that gets update everytime I do terraform apply.
+
+- Ignore *.tfvars the reason is Terraform variables are a way to give users of terraform a way to set Parameter for the configurations file this parameters will be different base on the Environment . Also Terraform file may acutally contain some sensitive data
+
 
 #### Configure AWS Provider 
 
