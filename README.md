@@ -36,6 +36,8 @@
  
   - [Variables](#Variables)
  
+  - [Deploy Nginx in EC2 Server](#Deploy-Nginx-in-EC2-Server)
+ 
 ## Complete CI/CD with Terraform
 
 #### Technologies used:
@@ -634,6 +636,75 @@ my_key_name = "terraform"
 ```
 
 If my `terraform.tfvars` have another name other than that like `terraform-dev.tfvars` I have to explicity define it in the command like this : `terraform apply --var-file terraform-dev.tfvars`
+
+#### Deploy Nginx in EC2 Server 
+
+Now I have create my VPC and my EC2 Instance . I also want to automate deploy my Nginx App to an EC2 Instances .
+
+- I will automate ssh into a Server . Install Docker and Deploy Nginx app as a Docker container
+
+With Terraform there is a way to do that at the time EC2 Server Creation is called `user_data`
+
+`user_data` is an entry point script that get executed on EC2 Instance .
+
+This `user_data` is one of a Attribute of `resource aws_instance` (https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/instance)
+
+I will create a bash script called `touch entry-script.sh` . Inside this file I will write a script that :
+
+- Update a server
+
+- Install Docker
+
+- Run Docker
+
+- Add `ec2-user` to Docker groups so `ec2-user` can execute docker command without using `sudo`
+
+- Then run Nginx container on port 8080:80
+
+My Script file will look like this :
+
+```
+entry-script.sh
+
+#!/bin/bash
+
+#!/bin/bash
+
+sudo yum update -y ## Update Server 
+
+sudo yum install -y docker ## Install Docker  
+
+sudo systemctl enable docker
+
+sudo systemctl start docker ## Start Docker 
+
+sleep 5 # Wait for Docker to be fully ready
+
+sudo usermod -aG docker ec2-user 
+
+docker run -d -p 8080:80 nginx
+```
+
+Then I will add `user_data` into `resource aws_instance` and give it an `entry-script.sh` file a location to it
+
+```
+resource "aws_instance" "my-ec2" {
+  ami = data.aws_ami.my-ami.id
+  instance_type = var.instance_type
+  subnet_id = aws_subnet.my_subnet.id
+  availability_zone = var.availability_zone
+  vpc_security_group_ids = [ aws_security_group.my-sg.id ]
+
+  associate_public_ip_address = true
+  
+  key_name = var.my_key_name
+
+  user_data = "./entry-script.sh"
+  tags = {
+    Name = "${var.env_prefix}-dev-ec2"
+  }
+}
+```
 
 
 
