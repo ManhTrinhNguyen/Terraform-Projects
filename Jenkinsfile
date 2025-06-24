@@ -4,6 +4,12 @@ pipeline {
     tools {
         maven 'maven-3.9'
     }
+
+    environment {
+        ECR_URL = "660753258283.dkr.ecr.us-west-1.amazonaws.com"
+        DOCKER_REPO = "660753258283.dkr.ecr.us-west-1.amazonaws.com/java-maven"
+    }
+
     stages {
         stage("increment Version") {
             steps {
@@ -16,23 +22,34 @@ pipeline {
 
                     def version = matcher[0][1]
 
-                    env.IMAGE_NAME = "java-app:$version"
+                    env.IMAGE_VERSION = "$version-$BUILD_NUMBER"
                 }
             }
         }
         stage("build jar") {
             steps {
                 script {
-                    echo "I changed something here"
-
+                    echo "Building Maven Jar"
+                    sh "mvn clean package"      
                 }
             }
         }
 
-        stage("build image") {
+        stage("build and push Docker Image") {
             steps {
                 script {
-                    echo "Build Image"
+                    withCredentials([
+                        usernamePassword(credentialsId: 'ECR_Credentials', usernameVariable: 'USER', passwordVariable: 'PWD')
+                    ]){
+                        echo "Build Docker Image"
+                        sh "docker build -t ${DOCKER_REPO}:${IMAGE_VERSION}"
+
+                        echo "Login to ECR"
+                        sh "echo ${PWD} | docker login --username ${USER} --password-stdin ${ECR_URL}"
+                        
+                        echo "Push Docker Image to ECR"
+                        sh "push ${DOCKER_REPO}:${IMAGE_VERSION}"
+                    }
                 }
             }
         }
