@@ -12,6 +12,10 @@
 
   - [Install Stage View Plugin](#Install-Stage-View-Plugin)
  
+- [CI Stage](#CI-Stage)
+
+  - [Configure Jenkins](#Configure-Jenkins)  
+ 
 - [Terraform](#Terraform)
 
   - [Configure AWS Provider](#Configure-AWS-Provider) 
@@ -257,6 +261,18 @@ Most of scenerio I will need to build Docker Image in Jenkins . That mean I need
 This Plugins help me see diffent stage defined in the UI . This mean Build Stage, Test, Deploy will displayed as separate stage in the UI 
 
 Go to Available Plugin -> Stage View
+
+## CI Stage 
+
+#### Configure Jenkins
+
+I will create a Multi Branch Pipline in Jenkins UI 
+
+
+
+
+
+
 
 
 ## Terraform 
