@@ -435,6 +435,27 @@ First I need Credentials to git Repository . I will use `withCredentials()`
 
 Inside` withCredentials()` block :
 
+```
+sh 'git config --global user.email "jenkins@gmail.com"'
+sh 'git config --global user.name "Jenkins"'
+
+// Set origin Access 
+sh "git remote set-url origin https://${USER}:${PWD}@github.com/ManhTrinhNguyen/Terraform-Projects.git"
+
+sh 'git add .'
+sh 'git commit -m "ci: version bump"'
+sh 'git push origin HEAD:main'
+```
+
+When Jenkins check outs up to date code in order to start a pipeline it doesn't check out the Branch, it checkout the commit hash (the last commit from that branch). That is the reason why I need to do sh `'git push origin HEAD:<job-branch>'`. So it saying that push all the commits that we have made inside this commit Branch inside this Jenkin Job
+
+#### Ignore Jenkins Commit for Jenkins Pipeline Trigger
+
+I need someway to detect that commit was made by Jenkin not the Developer and Ignore the Trigger when the Commit is from Jenkins
+
+I need a Plugin : Ignore Commiter Strategy
+
+Go to my Pipeline Configuration -> Inside the Branch Sources I see the Build Strategy (This is an option just got through the plugin) -> In this option I will put the email address of the committer that I want to Ignore . I can provide a list of email
 
 ## Terraform 
 
