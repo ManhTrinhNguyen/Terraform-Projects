@@ -20,6 +20,8 @@
  
   - [Configure Webhook to Trigger CI Pipeline Automatically on Every Change](#Configure-Webhook-to-Trigger-CI-Pipeline-Automatically-on-Every-Change)
  
+  - [Build Artifact](#Build-Artifact)
+ 
 - [Terraform](#Terraform)
 
   - [Configure AWS Provider](#Configure-AWS-Provider) 
@@ -328,8 +330,9 @@ stage("increment Version") {
 
 #### Configure Webhook to Trigger CI Pipeline Automatically on Every Change
 
-For Multibranch pipeline for every Repository: 
+<img width="600" alt="Screenshot 2025-03-27 at 09 43 53" src="https://github.com/user-attachments/assets/41f70a4b-aa1d-49e0-ae0f-c2365357aec5" />
 
+For Multibranch pipeline for every Repository: 
 
 - I need another Plugin call `Multibranch Scan Webhook Trigger`
 
@@ -339,18 +342,84 @@ To use that Token I will go to Github-> choose Webhook (Webhook is basically sam
 
 Periodically if not otherwise run : is for shedule the run
 
+#### Build Artifact 
 
+I want to add another stage To build a Java Maven Artifact 
 
+```
+stage("build jar") {
+    steps {
+        script {
+            echo "Building Maven Jar"
+            sh "mvn clean package"      
+        }
+    }
+}
+```
 
+#### Build And Push Docker Image to ECR 
 
+I need to create my ECR . Go to AWS console -> ECR -> Create Repository 
 
+I also need to create my ECR Credentials in Jenkins for Jenkins to `docker login` into my ECR 
 
+- To get a password : `aws ecr get-login-password --region us-west-1`
 
+- Username should be : `AWS`
 
+Once I have Username and Password I can create ECR Credentials in Jenkins 
 
+To Build Docker Image : `docker build 660753258283.dkr.ecr.us-west-1.amazonaws.com/java-maven:${IMAGE_VERSION}`
 
+- My Docker Image have to have a ECR URL endpoint attached to it for Docker to know this Image should push to ECR.
 
+- I also configure my DOCKER REPO as a ENV
 
+```
+environment {
+  DOCKER_REPO = "660753258283.dkr.ecr.us-west-1.amazonaws.com/java-maven"
+}
+```
+
+- So I build docker image will look cleaner `sh "docker build -t ${DOCKER_REPO}:${IMAGE_VERSION}"`
+
+In order to get Credentials from Jenkins to login to ECR I use a built-in function `withCredentials([])`
+
+- `sh "echo ${PWD} | docker login --username ${USER} --password-stdin ${ECR_URL}"` I put ECR_URL as the end bcs Docker need the ECR endpoint in order to login to it
+
+- I also configured my `ECR_URL` as a ENV
+
+```
+environment {
+    ECR_URL = "660753258283.dkr.ecr.us-west-1.amazonaws.com"
+    DOCKER_REPO = "660753258283.dkr.ecr.us-west-1.amazonaws.com/java-maven"
+}
+```
+
+Then I will push that Image to ECR 
+
+This is my entire code : 
+
+```
+stage("build and push Docker Image") {
+    steps {
+        script {
+            withCredentials([
+                usernamePassword(credentialsId: 'ECR_Credentials', usernameVariable: 'USER', passwordVariable: 'PWD')
+            ]){
+                echo "Build Docker Image"
+                sh "docker build -t ${DOCKER_REPO}:${IMAGE_VERSION}"
+
+                echo "Login to ECR"
+                sh "echo ${PWD} | docker login --username ${USER} --password-stdin ${ECR_URL}"
+                
+                echo "Push Docker Image to ECR"
+                sh "push ${DOCKER_REPO}:${IMAGE_VERSION}"
+            }
+        }
+    }
+}
+```
 
 ## Terraform 
 
