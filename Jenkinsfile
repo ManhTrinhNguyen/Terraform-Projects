@@ -42,7 +42,7 @@ pipeline {
                         usernamePassword(credentialsId: 'ECR_Credentials', usernameVariable: 'USER', passwordVariable: 'PWD')
                     ]){
                         echo "Build Docker Image"
-                        sh "docker build -t ${DOCKER_REPO}:${IMAGE_VERSION}"
+                        sh "docker build -t ${DOCKER_REPO}:${IMAGE_VERSION} ."
 
                         echo "Login to ECR"
                         sh "echo ${PWD} | docker login --username ${USER} --password-stdin ${ECR_URL}"
