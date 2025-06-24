@@ -14,7 +14,11 @@
  
 - [CI Stage](#CI-Stage)
 
-  - [Configure Jenkins](#Configure-Jenkins)  
+  - [Configure Jenkins](#Configure-Jenkins)
+ 
+  - [Dynamically Increment Application Version](#Dynamically-Increment-Application-Version)
+ 
+  - [Configure Webhook to Trigger CI Pipeline Automatically on Every Change](#Configure-Webhook-to-Trigger-CI-Pipeline-Automatically-on-Every-Change)
  
 - [Terraform](#Terraform)
 
@@ -266,7 +270,80 @@ Go to Available Plugin -> Stage View
 
 #### Configure Jenkins
 
-I will create a Multi Branch Pipline in Jenkins UI 
+1. I want to use Maven tool for my Java App
+
+- Go to Setting -> Tools -> Scroll down I can see Jenkins Installation Section 
+
+2. I want Jenkins to connect to my Github Repo to git my Source Code
+
+- I need to create my Github Credentials in Jenkins -> Go to setting -> Credentials -> Create one with Username and Password
+
+- I also need to give Jenkins my Github Repo URL
+
+3. Once everything configured I can start to create my Multil branch pipeline
+
+- I want to create Multi branch Pipeline Bcs I may have multiple different Branch 
+
+#### Dynamically Increment Application Version 
+
+I will use this command to Dynamically Increment Maven Application `mvn build-helper:parse-version versions:set -DnewVersion=\${parsedVersion.majorVersion}.\${parsedVersion.minorVersion}.\${parsedVersion.nextIncrementalVersion} versions:commit`
+
+- `parse-version` : It goes and find pom file and it find a version tag . When it find a version tag it parses the version inside into 3 parts Major, Minor, Increment
+
+- `version:set` : Set a version between version tag
+
+- `-DnewVersion` : This is a Parameter for versions:set
+
+- `\${parsedVersion.majorVersion}.\${parsedVersion.minorVersion}.\${parsedVersion.nextIncrementalVersion}` : This is How I know what is the next version that I need to increment to. I use next so it the parse-version know that Incremental part need to increase . If I don't use next it will keep it as it is
+
+- `version:commit` : Replace pom.xml with new Version
+
+To execute the command in the sh command in Jenkinsfile the syntax to escape dollar sign a little different: `mvn build-helper:parse-version versions:set -DnewVersion=\\\${parsedVersion.majorVersion}.\\\${parsedVersion.minorVersion}.\\\${parsedVersion.nextIncrementalVersion} versions:commit`
+
+I need to read `pom.xml` and access the version value then set it as a Variable
+
+To read `pom.xml` file and looking for version tag inside and put the `(.+)` regular expression to dynamic set a version value and set a variable to it called matcher: `def matcher = readFile(pom.xml) =~ <version>(.+)</version>` . This will give me an array of all the verions tags that it could find in this case I just have 1 and also the version value (child of version tag), so I would get that element like this : `matcher[0][1]`
+
+Then I would set a `IMAGE_NAME` as a ENV like this : `env.IMAGE_NAME = "java-app:$version"`
+
+My entire code will look like this: 
+
+```
+stage("increment Version") {
+    steps {
+        script {
+            echo "Increment Version"
+
+            sh "mvn build-helper:parse-version versions:set -DnewVersion=\\\${parsedVersion.majorVersion}.\\\${parsedVersion.minorVersion}.\\\${parsedVersion.nextIncrementalVersion} versions:commit"
+
+            def matcher = readFile('pom.xml') =~ '<version>(.+)</version>'
+
+            def version = matcher[0][1]
+
+            env.IMAGE_NAME = "java-app:$version"
+        }
+    }
+}
+```
+
+#### Configure Webhook to Trigger CI Pipeline Automatically on Every Change
+
+For Multibranch pipeline for every Repository: 
+
+
+- I need another Plugin call `Multibranch Scan Webhook Trigger`
+
+Once Installed I have Scan by Webhook in Multi branch Configuration -> Choose Scan by Webhook I have Trigger Token (This is a token that I can name whatever I want this Token will be use for the communication between Gitlab and Jenkin, or Github and Jenkins ...)
+
+To use that Token I will go to Github-> choose Webhook (Webhook is basically same Integration) . The way it work is I will tell Github to send Jenkin a Notification on a Specific URL using that Token and when Jenkin receive a request it will check a Token and it will trigger a multibranch pipeline which has scan by webhook configured for that specific token . I don't need the Secret Token
+
+Periodically if not otherwise run : is for shedule the run
+
+
+
+
+
+
 
 
 
