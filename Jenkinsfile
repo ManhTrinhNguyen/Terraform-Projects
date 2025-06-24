@@ -68,6 +68,7 @@ pipeline {
                     withCredentials([
                         usernamePassword(credentialsId: 'Github_Credential', usernameVariable: 'USER', passwordVariable: 'PWD')
                     ]){
+                        // Set Jenkins email and user name
                         sh 'git config --global user.email "jenkins@gmail.com"'
                         sh 'git config --global user.name "Jenkins"'
 
