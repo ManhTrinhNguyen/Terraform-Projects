@@ -22,6 +22,8 @@
  
   - [Build Artifact](#Build-Artifact)
  
+  - [Build And Push Docker Image to ECR](#Build-And-Push-Docker-Image-to-ECR)
+ 
 - [Terraform](#Terraform)
 
   - [Configure AWS Provider](#Configure-AWS-Provider) 
