@@ -60,6 +60,26 @@ pipeline {
                     echo "Deploy"
                 }
             }
-        }               
+        } 
+
+        stage("Commit to Git Repo"){
+            steps {
+                script {
+                    withCredentials([
+                        usernamePassword(credentialsId: 'Github_Credential', usernameVariable: 'USER', passwordVariable: 'PWD')
+                    ]){
+                        sh 'git config --global user.email "jenkins@gmail.com"'
+                        sh 'git config --global user.name "Jenkins"'
+
+                        // Set origin Access 
+                        sh "git remote set-url origin https://${USER}:${PWD}@github.com/ManhTrinhNguyen/Terraform-Projects.git"
+
+                        sh 'git add .'
+                        sh 'git commit -m "ci: version bump"'
+                        sh "git push origin HEAD:${BRANCH_NAME}"
+                    }
+                }
+            }
+        }              
     }
 } 
