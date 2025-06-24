@@ -48,7 +48,7 @@ pipeline {
                         sh "echo ${PWD} | docker login --username ${USER} --password-stdin ${ECR_URL}"
                         
                         echo "Push Docker Image to ECR"
-                        sh "push ${DOCKER_REPO}:${IMAGE_VERSION}"
+                        sh "docker push ${DOCKER_REPO}:${IMAGE_VERSION}"
                     }
                 }
             }
