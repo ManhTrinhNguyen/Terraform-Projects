@@ -16,14 +16,14 @@ pipeline {
 
                     def version = matcher[0][1]
 
-                    echo "${version}"
+                    env.IMAGE_NAME = "java-app:$version"
                 }
             }
         }
         stage("build jar") {
             steps {
                 script {
-                    echo "Build Jar"
+                    echo "I changed something here"
 
                 }
             }
