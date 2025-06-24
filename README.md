@@ -52,6 +52,8 @@
  
   - [Deploy Nginx in EC2 Server](#Deploy-Nginx-in-EC2-Server)
  
+- [CD Stage](#CD-Stage) 
+ 
 ## Complete CI/CD with Terraform
 
 #### Technologies used:
@@ -919,7 +921,7 @@ Now I will `terraform destroy --auto-approve` and `terraform apply --auto-approv
 <img width="706" alt="Screenshot 2025-06-22 at 13 01 14" src="https://github.com/user-attachments/assets/5a73a2ba-4823-42d6-b617-9964daebeddc" />
 
 
-
+## CD Stage
 
 
 
