@@ -24,6 +24,8 @@
  
   - [Build And Push Docker Image to ECR](#Build-And-Push-Docker-Image-to-ECR)
  
+  - [Make Jenkin commit and push to Repo](#Make-Jenkin-commit-and-push-to-Repo)
+ 
 - [Terraform](#Terraform)
 
   - [Configure AWS Provider](#Configure-AWS-Provider) 
@@ -422,6 +424,17 @@ stage("build and push Docker Image") {
     }
 }
 ```
+
+#### Make Jenkin commit and push to Repo
+
+Everytime pipeline run in Jenkins, it will create a new Image Version and then will commit that `pom.xml` change back into repository so now other Developer want to commit something to that Branch they first need to fetch that change that Jenkin Commited and continus working from there 
+
+I will add another Git commit version update Stage :
+
+First I need Credentials to git Repository . I will use `withCredentials()`
+
+Inside` withCredentials()` block :
+
 
 ## Terraform 
 
