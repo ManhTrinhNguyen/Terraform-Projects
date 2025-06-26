@@ -100,7 +100,7 @@ resource "aws_instance" "my-ec2" {
   
   key_name = var.my_key_name
 
-  user_data = "./entry-script.sh"
+  # user_data = "./entry-script.sh"
 
   user_data_replace_on_change = true
   tags = {

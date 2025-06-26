@@ -12,6 +12,6 @@ output "ami-id" {
   value = data.aws_ami.my-ami.id
 }
 
-output "ec2-public_ip" {
+output "ec2-public-ip" {
   value = aws_instance.my-ec2.public_ip
 }

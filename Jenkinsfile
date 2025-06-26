@@ -1,6 +1,7 @@
 
 pipeline {   
     agent any
+
     tools {
         maven 'maven-3.9'
     }
@@ -66,7 +67,14 @@ pipeline {
                     dir('terraform') {
                       echo "provision Terraform ...."
                       sh "terraform init" 
-                      sh "terraform destroy --auto-approve"
+                      sh "terraform apply --auto-approve"
+
+                      def ec2_ip = sh (
+                        script: "terraform output ec2-public-ip"
+                        returnStdout: true
+                      )
+
+                      env.EC2_PUBLIC_IP = ec2_ip
                     }
                 }
             }
@@ -76,6 +84,10 @@ pipeline {
             steps {
                 script {
                     echo "Deploy !!!!!!!!!!!!!!"
+                    
+                    sshagent(['ec2_ssh_credential']) {
+                        sh "scp -o StrictHostKeyChecking=no entry-script.sh ec2-user@${EC2_PUBLIC_IP}:/home/ec2-user"
+                    }
                 }
             }
         } 
