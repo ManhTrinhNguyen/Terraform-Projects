@@ -350,13 +350,17 @@ stage("increment Version") {
 
 For Multibranch pipeline for every Repository: 
 
-- I need another Plugin call `Multibranch Scan Webhook Trigger`
+- I need another Plugin call `Scan Multibranch Pipeline Triggers`
 
-Once Installed I have Scan by Webhook in Multi branch Configuration -> Choose Scan by Webhook I have Trigger Token (This is a token that I can name whatever I want this Token will be use for the communication between Gitlab and Jenkin, or Github and Jenkins ...)
+Once it installed I will go to my Mutil branch job -> Configure -> Scroll down to Periodically if not otherwise run -> And make sure it checked 
 
-To use that Token I will go to Github-> choose Webhook (Webhook is basically same Integration) . The way it work is I will tell Github to send Jenkin a Notification on a Specific URL using that Token and when Jenkin receive a request it will check a Token and it will trigger a multibranch pipeline which has scan by webhook configured for that specific token . I don't need the Secret Token
+After that Go to my Gitub repo -> Settings -> Webhook -> configure `http://<your-jenkins-domain>/github-webhook/` 
 
-Periodically if not otherwise run : is for shedule the run
+After that I need to go to Jenkins UI -> Settings -> System -> Scroll down to Github section and set this 
+
+<img width="500" alt="Screenshot 2025-06-25 at 20 26 02" src="https://github.com/user-attachments/assets/18bf5353-58cd-46e7-a79f-45d9cb657937" />
+
+- Make sure credentials set in Global and as Secrect Text
 
 #### Build Artifact 
 
@@ -468,6 +472,8 @@ I need someway to detect that commit was made by Jenkin not the Developer and Ig
 I need a Plugin : Ignore Commiter Strategy
 
 Go to my Pipeline Configuration -> Inside the Branch Sources I see the Build Strategy (This is an option just got through the plugin) -> In this option I will put the email address of the committer that I want to Ignore . I can provide a list of email
+
+Also checked `Allow builds when a changeset contains non-ignored author(s)`
 
 ## Terraform 
 
