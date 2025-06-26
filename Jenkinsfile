@@ -75,7 +75,7 @@ pipeline {
                     //     ).trim()
 
                     //   env.EC2_PUBLIC_IP = ec2_ip
-                    // }
+                    }
                 }
             }
         }
