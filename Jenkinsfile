@@ -67,14 +67,14 @@ pipeline {
                     dir('terraform') {
                       echo "provision Terraform ...."
                       sh "terraform init" 
-                      sh "terraform apply --auto-approve"
+                      sh "terraform destroy --auto-approve"
 
-                      def ec2_ip = sh(
-                            script: "terraform output ec2-public-ip",
-                            returnStdout: true
-                        ).trim()
+                    //   def ec2_ip = sh(
+                    //         script: "terraform output ec2-public-ip",
+                    //         returnStdout: true
+                    //     ).trim()
 
-                      env.EC2_PUBLIC_IP = ec2_ip
+                    //   env.EC2_PUBLIC_IP = ec2_ip
                     }
                 }
             }
