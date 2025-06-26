@@ -11,7 +11,7 @@ variable "my_ip_address" {
   default = "157.131.152.31/32"
 }
 variable "instance_type" {
-  default = "t3.micro"
+  default = "t3.medium"
 }
 variable "env_prefix" {
   default = "development"

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+PATH=$PATH:/usr/local/bin
+
 sudo yum update -y ## Update Server 
 
 sudo yum install -y docker ## Install Docker  
