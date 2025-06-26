@@ -81,12 +81,19 @@ pipeline {
         }
 
         stage("deploy") {
+            environment {
+                ECR_CRED = credentials('ECR_Credentials')
+            }
             steps {
                 script {
                     echo "Deploy !!!!!!!!!!!!!!"
-                    
+                    ec2_instance = "ec2-user@${EC2_PUBLIC_IP}"
+                    shell_cmd = "server-cmd.sh ${DOCKER_REPO}:${IMAGE_VERSION} ${ECR_CRED_USR} ${ECR_CRED_PSW} ${ECR_URL}"
+
                     sshagent(['ec2_ssh_credential']) {
-                        sh "scp -o StrictHostKeyChecking=no docker-compose.yaml ec2-user@${EC2_PUBLIC_IP}:/home/ec2-user"
+                        sh "scp -o StrictHostKeyChecking=no docker-compose.yaml ${ec2_instance}:/home/ec2-user"
+                        sh "scp -o StrictHostKeyChecking=no server-cmd.sh ${ec2_instance}:/home/ec2-user"
+                        sh "ssh -o StrictHostKeyChecking=no ${ec2_instance} ${shell_cmd}"
                     }
                 }
             }

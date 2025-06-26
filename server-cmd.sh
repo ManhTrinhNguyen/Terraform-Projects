@@ -1,15 +1,12 @@
 #!/bin/bash
 
-sudo dnf update -y ## Update Server 
+export IMAGE_NAME=$1
+export ECR_USERNAME=$2
+export ECR_PASS=$3
+export ECR_URL=$4
 
-sudo dnf install -y docker ## Install Docker  
+echo $ECR_PASS | docker login --username $ECR_USERNAME --password-stdin $ECR_URL
 
-sudo systemctl start docker
+docker-compose -f docker-compose.yaml up --detach 
 
-sudo systemctl enable docker  
-
-sleep 5 # Wait for Docker to be fully ready
-
-sudo usermod -aG docker ec2-user 
-
-sudo dnf install -y docker-compose-plugin 
+echo "Success deploy my java app"
