@@ -81,8 +81,8 @@ pipeline {
                         usernamePassword(credentialsId: 'Github_Credential', usernameVariable: 'USER', passwordVariable: 'PWD')
                     ]){
                         // Set Jenkins email and user name
-                        sh 'git config --global user.email "trinh-bot@gmail.com"'
-                        sh 'git config --global user.name "trinh-bot"'
+                        sh 'git config user.email "trinh-bot@gmail.com"'
+                        sh 'git config user.name "trinh-bot"'
 
                         // Set origin Access 
                         sh "git remote set-url origin https://${USER}:${PWD}@github.com/ManhTrinhNguyen/Terraform-Projects.git"
