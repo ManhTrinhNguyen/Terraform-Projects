@@ -69,7 +69,7 @@ pipeline {
         stage("deploy") {
             steps {
                 script {
-                    echo "Deploy"
+                    echo "Deploy !!!!"
                 }
             }
         } 
