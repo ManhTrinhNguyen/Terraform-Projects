@@ -54,17 +54,17 @@ pipeline {
             }
         }
 
-        stage("Provision Server") {
-            steps {
-                script {
-                    echo "Provision EC2 Server"
-                    dir('terraform') {
-                      sh "terraform init" 
-                      sh "terraform apply -var-file terraform.tfvars --auto-approve"
-                    }
-                }
-            }
-        }
+        // stage("Provision Server") {
+        //     steps {
+        //         script {
+        //             echo "Provision EC2 Server"
+        //             dir('terraform') {
+        //               sh "terraform init" 
+        //               sh "terraform apply -var-file terraform.tfvars --auto-approve"
+        //             }
+        //         }
+        //     }
+        // }
 
         stage("deploy") {
             steps {
