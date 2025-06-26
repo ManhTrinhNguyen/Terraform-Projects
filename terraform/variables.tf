@@ -23,3 +23,7 @@ variable "my_key_name" {
 variable "jenkins_ip_address" {
   default = "165.232.141.93/32"
 }
+
+variable "private_key_location" {
+  default = "../../../../.ssh/terraform.pem"
+}

@@ -113,21 +113,21 @@ resource "aws_instance" "my-ec2" {
     Name = "${var.env_prefix}-dev-ec2"
   }
 
-  connection {
-    type = "ssh"
-    host = self.public_ip
-    user = "ec2-user"
-    private_key = "~/.ssh/terraform.pem"
-  }
+  # connection {
+  #   type = "ssh"
+  #   host = self.public_ip
+  #   user = "ec2-user"
+  #   private_key = var.private_key_location
+  # }
 
-  provisioner "file" {
-    source = "./entry-script.sh"
-    destination = "/home/ec2-user/entry-script.sh"
-  }
+  # provisioner "file" {
+  #   source = "./entry-script.sh"
+  #   destination = "/home/ec2-user/entry-script.sh"
+  # }
 
-  provisioner "remote-exec" {
-    inline = [ 
-      "/home/ec2-user/entry-script.sh"
-     ]
-  }
+  # provisioner "remote-exec" {
+  #   inline = [ 
+  #     "/home/ec2-user/entry-script.sh"
+  #    ]
+  # }
 }
