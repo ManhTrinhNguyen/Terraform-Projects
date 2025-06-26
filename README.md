@@ -953,7 +953,9 @@ Go to Jenkins UI -> Credentials -> Add Credentials -> Choose SSH username with p
 
 - Private I will get from `cat ~/.ssh/terraform.pem`
 
+#### Provision EC2
 
+I will create the `Provision Server` stage inside Jenkins file 
 
 
 
