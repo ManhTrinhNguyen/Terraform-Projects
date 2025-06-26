@@ -19,3 +19,7 @@ variable "env_prefix" {
 variable "my_key_name" {
   default = "terraform"
 }
+
+variable "jenkins_ip_address" {
+  default = "165.232.141.93/32"
+}

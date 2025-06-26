@@ -60,6 +60,14 @@ resource "aws_vpc_security_group_ingress_rule" "allow-SSH" {
   to_port = 22 
 }
 
+resource "aws_vpc_security_group_ingress_rule" "allow-SSH-jenkins" {
+  security_group_id = aws_security_group.my-sg.id
+  cidr_ipv4 = var.jenkins_ip_address
+  from_port = 22
+  ip_protocol = "tcp"
+  to_port = 22 
+}
+
 resource "aws_vpc_security_group_ingress_rule" "application-port-8080" {
   security_group_id = aws_security_group.my-sg.id
   cidr_ipv4 = "0.0.0.0/0"
