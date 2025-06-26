@@ -66,7 +66,7 @@ pipeline {
                     dir('terraform') {
                       echo "provision Terraform ...."
                       sh "terraform init" 
-                      sh "terraform apply --auto-approve"
+                      sh "terraform destroy --auto-approve"
                     }
                 }
             }
