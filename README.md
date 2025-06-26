@@ -61,8 +61,18 @@
     - [SSH key pair for the server](#SSH-key-pair-for-the-server)
    
     - [Create AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY](#Create-AWS_ACCESS_KEY_ID-and-AWS_SECRET_ACCESS_KEY)
+   
+    - [Provision Server](#Provision-Server)
  
   - [Deploy new application version on the provisioned EC2 instance with Docker Compose](#Deploy-new-application-version-on-the-provisioned-EC2-instance-with-Docker-Compose)
+ 
+    - [Docker Compose](#Docker-Compose)
+   
+    - [Bash Script to install Docker and Docker Compose](#Bash-Script-to-install-Docker-and-Docker-Compose)
+   
+    - [Dynamically get new IP Address](#Dynamically-get-new-IP-Address)
+   
+    - [Modify Terraform folder](#Modify-Terraform-folder)
  
 ## Complete CI/CD with Terraform
 
@@ -1032,14 +1042,195 @@ stage("Provision Server") {
 }
 ````
 
+### Deploy new application version on the provisioned EC2 instance with Docker Compose
+
+#### SSH Agent 
+
+I need to install SSH agent plugin for Jenkin . 
+
+- This plugin allows you to provide SSH credentials to builds via a ssh-agent in Jenkins.
+
+Go to Jenkins UI -> Plugin -> Available Plugin -> SSH Agent 
+
+This is a syntax for it :
+
+```
+sshagent(['ec2_ssh_credential']) {
+    // some block
+}
+```
+
+I have create this Credentials `ec2_ssh_credential` above for my Jenkins to ssh to my EC2 Server 
+
+#### Docker Compose 
+
+```
+version: '3.8'
+services:
+  java-maven-app:
+    image: ${IMAGE}
+    ports:
+      - 8080:8080
+  postgres:
+    image: postgres:15
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_PASSWORD=my-pwd
+```
+
+`image: ${IMAGE}`: I want to dynamically set my Image Name 
+
+This is my Docker Compose . I have my Java Application run with a PostgresQL DB 
 
 
+#### Dynamically get new IP Address
+
+In terraform folder I have set a `output.tf` like this 
+
+![Screenshot 2025-06-26 at 11 36 07](https://github.com/user-attachments/assets/b9ec1c8c-6cc4-47c2-a458-884d07f90319)
+
+So I have a output name `ec2-public-ip` that will print out my ec2 public ip
+
+`Terraform ouput ec2_public_ip` This command to get an output from a State file 
+
+In my Provision Server Stage I will execute that command and set it as ENV so I can use for another Stage like this : 
+
+```
+steps {
+    script {
+        dir('terraform') {
+            sh 'terraform init'
+            sh 'terraform apply --auto-approve'
+            def ec2_ip = sh(
+                script: "terraform output ec2_public_ip",
+                returnStdout: true
+            ).trim()
+
+            env.EC2_PUBLIC_IP = ec2_ip
+        }
+    }
+}
+```
+
+`def ec2_ip`: Set my output values as a ec2_ip variable 
+
+`terraform output ec2_public_ip` This command is to print out the output 
+
+`returnStdout: true` : Return the output value
+
+`env.EC2_PUBLIC_IP = ec2_ip` : Then I set ec2_ip value as a EC2_PUBLIC_IP as a ENV 
+
+#### Modify Terraform folder 
+
+I will remove the `user_data`. I will create another bash script that will install docker and docker compose also will run the docker compose 
+
+I want to add a `curl` command to also download a docker compose . And take out the `docker run nginx`
+
+#### Add Jenkins user IP Address allow Jenkins to SG
+
+```
+resource "aws_vpc_security_group_ingress_rule" "allow-SSH-jenkins" {
+  security_group_id = aws_security_group.my-sg.id
+  cidr_ipv4 = var.jenkins_ip_address
+  from_port = 22
+  ip_protocol = "tcp"
+  to_port = 22 
+}
+```
+
+#### Create server-cmd.sh script 
+
+```
+#!/bin/bash
+
+sudo yum update -y ## Update Server 
+
+sudo yum install -y docker ## Install Docker  
+
+sudo systemctl enable docker
+
+sudo systemctl start docker ## Start Docker 
+
+sudo usermod -aG docker ec2-user 
+
+sleep 10s
+
+### Download Docker compose 
+
+sudo curl -SL "https://github.com/docker/compose/releases/download/v2.35.0/docker-compose-linux-x86_64" -o /usr/local/bin/docker-compose
+
+sudo chmod +x /usr/local/bin/docker-compose
+
+sleep 10s
+
+export IMAGE_NAME=$1
+export ECR_USERNAME=$2
+export ECR_PASS=$3
+export ECR_URL=$4
+
+echo $ECR_PASS | docker login --username $ECR_USERNAME --password-stdin $ECR_URL
+
+docker-compose -f docker-compose.yaml up --detach 
+
+echo "Success deploy my java app"
+```
+
+This script will be automatically execute on EC2 Server 
+
+I want to login to ECR and then run docker-compose in detach mode 
 
 
+```
+export IMAGE_NAME=$1
+export ECR_USERNAME=$2
+export ECR_PASS=$3
+export ECR_URL=$4
+```
 
+Those value above I want to dynamically set it as ENV in a EC2 Server so my docker login can get also my docker compose can get it 
 
+#### Add Sleep before deploy my app 
 
+In my Deploy Stage I want to stop 180s before deploy my app `sleep(time: 180, unit: "SECONDS")` 
 
+The reason is EC2 Instance need to take time to initilize the server If I deploy right away it might not ready yet 
+
+#### Complete Deploy Stage 
+
+```
+stage("deploy") {
+  environment {
+      ECR_CRED = credentials('ECR_Credentials')
+  }
+  steps {
+      script {
+          echo "Deploy !!!!!!!!!!!!!!"
+
+          sleep(time: 180, unit: "SECONDS")
+
+          def ec2_instance = "ec2-user@${EC2_PUBLIC_IP}"
+          def shell_cmd = "bash /home/ec2-user/server-cmd.sh ${DOCKER_REPO}:${IMAGE_VERSION} ${ECR_CRED_USR} ${ECR_CRED_PSW} ${ECR_URL}"
+
+          sshagent(['ec2_ssh_credential']) {
+              sh "scp -o StrictHostKeyChecking=no docker-compose.yaml ${ec2_instance}:/home/ec2-user"
+              sh "scp -o StrictHostKeyChecking=no server-cmd.sh ${ec2_instance}:/home/ec2-user"
+              sh "ssh -o StrictHostKeyChecking=no ${ec2_instance} ${shell_cmd}"
+          }
+      }
+  }
+} 
+```
+
+The `environemt ECR_CRED` is a Credentials for my docker login into ECR . I will pass it in the `shell_cmd`
+
+`def ec2_instance = "ec2-user@${EC2_PUBLIC_IP}"`: this is my ec2-user with its ip address to ssh to its
+
+`"bash /home/ec2-user/server-cmd.sh ${DOCKER_REPO}:${IMAGE_VERSION} ${ECR_CRED_USR} ${ECR_CRED_PSW} ${ECR_URL}"`: This shell cmd I have 4 parameters IMAGE_NAME, ECR_USERNAME, ECR_PASSWORD, and ECR_URL . I have set it above 
+
+Then I will `scp` my docker-compose.yaml file and server-cmd.sh script to ec2 server and then execute it `ssh -o StrictHostKeyChecking=no ${ec2_instance} ${shell_cmd}`
+
+`-o StrictHostKeyChecking=no` to turn off the interactive mode 
 
 
 
