@@ -55,12 +55,18 @@ pipeline {
         }
 
         stage("Provision Server") {
+            environment {
+                AWS_ACCESS_KEY = credentials("AWS_ACCESS_KEY_ID")
+                AWS_SECRET_KEY_ID = credentials("AWS_SECRET_KEY_ID")
+                TF_VAR_my_ip_address = "71.202.102.216"
+            }
             steps {
                 script {
                     echo "Provision EC2 Server"
                     dir('terraform') {
                       echo "provision Terraform ...."
                       sh "terraform init" 
+                      sh "terraform apply --auto-approve"
                     }
                 }
             }

@@ -10,6 +10,12 @@ variable "availability_zone" {
 variable "my_ip_address" {
   default = "157.131.152.31/32"
 }
-variable "instance_type" {}
-variable "env_prefix" {}
-variable "my_key_name" {}
+variable "instance_type" {
+  default = "t3.micro"
+}
+variable "env_prefix" {
+  default = "development"
+}
+variable "my_key_name" {
+  default = "terraform"
+}
