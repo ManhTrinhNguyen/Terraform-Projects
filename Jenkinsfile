@@ -60,7 +60,7 @@ pipeline {
                     echo "Provision EC2 Server !!!"
                     dir('terraform') {
                         sh "terraform init" 
-                        sh "terraform apply --auto-approve"
+                        sh "terraform apply -var-file terraform.tfvars --auto-approve"
                     }
                 }
             }
