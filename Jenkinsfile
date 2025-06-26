@@ -86,7 +86,7 @@ pipeline {
                     echo "Deploy !!!!!!!!!!!!!!"
                     
                     sshagent(['ec2_ssh_credential']) {
-                        sh "scp -o StrictHostKeyChecking=no entry-script.sh ec2-user@${EC2_PUBLIC_IP}:/home/ec2-user"
+                        sh "scp -o StrictHostKeyChecking=no docker-compose.yaml ec2-user@${EC2_PUBLIC_IP}:/home/ec2-user"
                     }
                 }
             }

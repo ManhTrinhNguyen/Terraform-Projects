@@ -8,8 +8,10 @@ sudo systemctl enable docker
 
 sudo systemctl start docker ## Start Docker 
 
-sleep 5 # Wait for Docker to be fully ready
-
 sudo usermod -aG docker ec2-user 
 
-docker run -d -p 8080:80 nginx
+### Download Docker compose 
+
+curl -SL "https://github.com/docker/compose/releases/download/v2.35.0/docker-compose-linux-x86_64" -o /usr/local/bin/docker-compose
+
+chmod +x /usr/local/bin/docker-compose
