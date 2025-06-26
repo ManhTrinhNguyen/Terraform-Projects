@@ -998,6 +998,8 @@ Terraform need my AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY in order to connec
 
 Goto Jenkins UI -> Credentials -> Create Credentials -> Choose Secret Text 
 
+To get those Keys `cat ~/.aws/credentials`
+
 #### Provision Server 
 
 I will Create a `Provision Server` Stage 
