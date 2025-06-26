@@ -59,6 +59,8 @@
     - [Install Terraform inside Jenkins](#Install-Terraform-inside-Jenkins)
    
     - [SSH key pair for the server](#SSH-key-pair-for-the-server)
+   
+    - [Create AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY](#Create-AWS_ACCESS_KEY_ID-and-AWS_SECRET_ACCESS_KEY)
  
   - [Deploy new application version on the provisioned EC2 instance with Docker Compose](#Deploy-new-application-version-on-the-provisioned-EC2-instance-with-Docker-Compose)
  
@@ -953,9 +955,75 @@ Go to Jenkins UI -> Credentials -> Add Credentials -> Choose SSH username with p
 
 - Private I will get from `cat ~/.ssh/terraform.pem`
 
-#### Provision EC2
+#### Configure variables.tf file 
 
-I will create the `Provision Server` stage inside Jenkins file 
+I need to added default value into my variables.tf file so I don't have to commit my `terraform.tfvars` in the Repo . Jenkins will use it as a default value 
+
+If I want to Change any value of it I use `TF_VAR_<variable-name>` inside my Jenkinsfile 
+
+
+```
+variable "cidr_block" {
+  default = "10.0.0.0/16"
+}
+variable "subnet_cidr_block" {
+  default = "10.0.0.0/24"
+}
+variable "availability_zone" {
+  default = "us-west-1a"
+}
+variable "my_ip_address" {
+  default = "157.131.152.31/32"
+}
+variable "instance_type" {
+  default = "t3.micro"
+}
+variable "env_prefix" {
+  default = "development"
+}
+variable "my_key_name" {
+  default = "terraform"
+}
+```
+
+#### Create AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY 
+
+Terraform need my AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY in order to connect to my AWS
+
+Goto Jenkins UI -> Credentials -> Create Credentials -> Choose Secret Text 
+
+#### Provision Server 
+
+I will Create a `Provision Server` Stage 
+
+First Inside the Stage I need to set ENV to reference my AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY 
+
+Also If I need to override any Terraform value I can use `TF_VARS_<variables-name>` in that 
+
+Then inside step I need to use `dir('terraform')` to make sure Jenkins work on that folder 
+
+This is what my stage look like 
+
+```
+stage("Provision Server") {
+    environment {
+        AWS_ACCESS_KEY_ID = credentials("AWS_ACCESS_KEY_ID")
+        AWS_SECRET_ACCESS_KEY = credentials("AWS_SECRET_KEY_ID")
+        TF_VAR_my_ip_address = "71.202.102.216/32"
+    }
+    steps {
+        script {
+            echo "Provision EC2 Server"
+            dir('terraform') {
+              echo "provision Terraform ...."
+              sh "terraform init" 
+              sh "terraform destroy --auto-approve"
+            }
+        }
+    }
+}
+````
+
 
 
 
