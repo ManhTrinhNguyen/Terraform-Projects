@@ -59,6 +59,7 @@ pipeline {
                 script {
                     echo "Provision EC2 Server"
                     dir('terraform') {
+                      echo "provision Terraform ...."
                       sh "terraform init" 
                     }
                 }
