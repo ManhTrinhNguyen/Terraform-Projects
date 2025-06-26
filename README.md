@@ -52,7 +52,15 @@
  
   - [Deploy Nginx in EC2 Server](#Deploy-Nginx-in-EC2-Server)
  
-- [CD Stage](#CD-Stage) 
+- [CD Stage](#CD-Stage)
+
+  - [Automatically provision EC2 instance using TF](#Automatically-provision-EC2-instance-using-TF)
+ 
+    - [Install Terraform inside Jenkins](#Install-Terraform-inside-Jenkins)
+   
+    - [SSH key pair for the server](#SSH-key-pair-for-the-server)
+ 
+  - [Deploy new application version on the provisioned EC2 instance with Docker Compose](#Deploy-new-application-version-on-the-provisioned-EC2-instance-with-Docker-Compose)
  
 ## Complete CI/CD with Terraform
 
@@ -922,6 +930,30 @@ Now I will `terraform destroy --auto-approve` and `terraform apply --auto-approv
 
 
 ## CD Stage
+
+### Automatically provision EC2 instance using TF
+
+#### Install Terraform inside Jenkins
+
+SSH into a Server where I deployed Jenkins : `ssh root@<ip-address>`. 
+
+Then I will `docker exec -it <container-id> -u 0 /bin/bash` inside the jenkins container as root user . 
+
+To check what Linux distribution of my container is  : `cat /etc/os-release`
+
+This is a Document to install Terraform in Linux Debian (https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli)
+
+#### SSH key pair for the server 
+
+I will give my `.pem` key that I created from AWS before to Jenkins 
+
+Go to Jenkins UI -> Credentials -> Add Credentials -> Choose SSH username with private key
+
+- Username would be `ec2-user`
+
+- Private I will get from `cat ~/.ssh/terraform.pem`
+
+
 
 
 
