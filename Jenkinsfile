@@ -67,40 +67,40 @@ pipeline {
                     dir('terraform') {
                       echo "provision Terraform ...."
                       sh "terraform init" 
-                      sh "terraform apply --auto-approve"
+                      sh "terraform destroy --auto-approve"
 
-                      def ec2_ip = sh(
-                            script: "terraform output ec2-public-ip",
-                            returnStdout: true
-                        ).trim()
+                    //   def ec2_ip = sh(
+                    //         script: "terraform output ec2-public-ip",
+                    //         returnStdout: true
+                    //     ).trim()
 
-                      env.EC2_PUBLIC_IP = ec2_ip
+                    //   env.EC2_PUBLIC_IP = ec2_ip
                     }
                 }
             }
         }
 
-        stage("deploy") {
-            environment {
-                ECR_CRED = credentials('ECR_Credentials')
-            }
-            steps {
-                script {
-                    echo "Deploy !!!!!!!!!!!!!!"
+        // stage("deploy") {
+        //     environment {
+        //         ECR_CRED = credentials('ECR_Credentials')
+        //     }
+        //     steps {
+        //         script {
+        //             echo "Deploy !!!!!!!!!!!!!!"
 
-                    sleep(time: 180, unit: "SECONDS")
+        //             sleep(time: 180, unit: "SECONDS")
 
-                    def ec2_instance = "ec2-user@${EC2_PUBLIC_IP}"
-                    def shell_cmd = "bash /home/ec2-user/server-cmd.sh ${DOCKER_REPO}:${IMAGE_VERSION} ${ECR_CRED_USR} ${ECR_CRED_PSW} ${ECR_URL}"
+        //             def ec2_instance = "ec2-user@${EC2_PUBLIC_IP}"
+        //             def shell_cmd = "bash /home/ec2-user/server-cmd.sh ${DOCKER_REPO}:${IMAGE_VERSION} ${ECR_CRED_USR} ${ECR_CRED_PSW} ${ECR_URL}"
 
-                    sshagent(['ec2_ssh_credential']) {
-                        sh "scp -o StrictHostKeyChecking=no docker-compose.yaml ${ec2_instance}:/home/ec2-user"
-                        sh "scp -o StrictHostKeyChecking=no server-cmd.sh ${ec2_instance}:/home/ec2-user"
-                        sh "ssh -o StrictHostKeyChecking=no ${ec2_instance} ${shell_cmd}"
-                    }
-                }
-            }
-        } 
+        //             sshagent(['ec2_ssh_credential']) {
+        //                 sh "scp -o StrictHostKeyChecking=no docker-compose.yaml ${ec2_instance}:/home/ec2-user"
+        //                 sh "scp -o StrictHostKeyChecking=no server-cmd.sh ${ec2_instance}:/home/ec2-user"
+        //                 sh "ssh -o StrictHostKeyChecking=no ${ec2_instance} ${shell_cmd}"
+        //             }
+        //         }
+        //     }
+        // } 
 
         stage("Commit to Git Repo"){
             steps {
