@@ -73,6 +73,8 @@
     - [Dynamically get new IP Address](#Dynamically-get-new-IP-Address)
    
     - [Modify Terraform folder](#Modify-Terraform-folder)
+   
+    - [Complete Deploy Stage](#Complete-Deploy-Stage)
  
 ## Complete CI/CD with Terraform
 
@@ -1231,6 +1233,8 @@ The `environemt ECR_CRED` is a Credentials for my docker login into ECR . I will
 Then I will `scp` my docker-compose.yaml file and server-cmd.sh script to ec2 server and then execute it `ssh -o StrictHostKeyChecking=no ${ec2_instance} ${shell_cmd}`
 
 `-o StrictHostKeyChecking=no` to turn off the interactive mode 
+
+<img width="600" alt="Screenshot 2025-06-26 at 14 24 11" src="https://github.com/user-attachments/assets/62f3d8c3-58d6-447f-b43b-c2c677f9045d" />
 
 
 
