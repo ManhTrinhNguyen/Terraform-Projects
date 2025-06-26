@@ -59,7 +59,7 @@ pipeline {
             environment {
                 AWS_ACCESS_KEY_ID = credentials("AWS_ACCESS_KEY_ID")
                 AWS_SECRET_ACCESS_KEY = credentials("AWS_SECRET_KEY_ID")
-                TF_VAR_my_ip_address = "71.202.102.216/32"
+                // TF_VAR_my_ip_address = "71.202.102.216/32"
             }
             steps {
                 script {
@@ -70,9 +70,9 @@ pipeline {
                       sh "terraform apply --auto-approve"
 
                       def ec2_ip = sh(
-                        script: "terraform output ec2-public-ip",
-                        returnStdout: true
-                      ).trim()
+                            script: "terraform output ec2-public-ip",
+                            returnStdout: true
+                        ).trim()
 
                       env.EC2_PUBLIC_IP = ec2_ip
                     }
