@@ -29,7 +29,7 @@ pipeline {
         stage("build jar") {
             steps {
                 script {
-                    echo "Building Maven Jar !!!!"
+                    echo "Building Maven Jar !"
                     sh "mvn clean package"      
                 }
             }
