@@ -75,6 +75,8 @@
     - [Modify Terraform folder](#Modify-Terraform-folder)
    
     - [Complete Deploy Stage](#Complete-Deploy-Stage)
+   
+  - [Remote State](#Remote-State) 
  
 ## Complete CI/CD with Terraform
 
@@ -1236,8 +1238,74 @@ Then I will `scp` my docker-compose.yaml file and server-cmd.sh script to ec2 se
 
 <img width="600" alt="Screenshot 2025-06-26 at 14 24 11" src="https://github.com/user-attachments/assets/62f3d8c3-58d6-447f-b43b-c2c677f9045d" />
 
+### Remote State
 
+When I am working with Terraform in a team where different team members maybe execute Terraform commands locally or I am intergrating Terraform in a CI/CD pipeline I have multiple places where State can be created . 
 
+Problem : Each user /CI server must make sure they always have the latest state data before running Terraform 
+
+In my case I ran CI/CD pipeline and create a Terraform State inside Jenkins . So that Terraform State file is only available inside that Jenkins Server, so we don't have access to it locally . So If I wanted to do `terraform plane or apply` some change on top of that, I would not be able to do it bcs I don't have that State . 
+
+To share the Terraform State between different environments maybe different team members and there is actually a very simple way to do that, and it is also a **Best Practice** is to configure a remote Terraform State . So basically a remote storage where this Terraform State file will be stored . 
+
+It is also good for data backup in case something happens to the Server and the State file basically gets removed so to store it in a remote place securely is actually a good way to do that 
+
+It's also can be shared and Keep Sensitive data off disk
+
+#### Configure Remote Storage 
+
+To configure a Remote Storage for Terraform State file I use `terraform {}` block 
+
+`terraform {}` block is for configuring metadata and information about Terraform itself 
+
+`backend` is a remote backend for Terraform and one of the Remote storages for Terraform State file is `S3 bucket ` . `S3 bucket` is a storage in AWS that is mostly used for storing files 
+
+`bucket` is to configure name of bucket . It needs to be globally unique
+
+`key` is a path inside my bucket that I will create and it can have a folder structure like a folder hierarchy structure 
+
+`region` doesn't have to be the same region as the one that I am creating my `resources` in bcs it is just for storing the data
+
+```
+terraform {
+   required_version = ">= 0.12"
+  backend "s3" {
+    bucket = "bucket-for-terraform-test-1"
+    key = "myapp/state.tfstate"
+    region = "us-west-1"
+  }
+}
+```
+
+With those Configuration above Terraform will create the State file inside the bucket and then it will keep updating that Terraform state file inside the bucket everytime something changes 
+
+Before execute these changes make sure to `terraform destroy` current infrastructure first 
+
+#### Create AWS S3 Bucket 
+
+Go to AWS -> S3 
+
+When I switch to S3 service the Region will become global 
+
+Choose Create S3 bucket 
+
+  - `Block all public access` I can't open these files in the browser which makes sense bcs I want to protect my state files and I will able to access them obviously using AWS Credentials
+
+  - `Bucket Versioning` this basically creates a versioning of the files that I am storing in the bucket so everytime a file content changes a new version is created . I basically end up with a bunch of file that, very similar to git repository, I have file that versioned bcs I have history of the changes
+
+  - **Good practice** is to enable bucket versioning for my Terraform state file bcs if something happens and the up to date latest version of my State basically get messed up or somebody accidentally messes something up in the state file, then I still can go back to the previous State
+
+  - `Default encryption` . Server-side encryption is now automatically selected as a default encryption type
+
+  - `Bucket key` can be disable 
+
+If I already have a local State and I want to migrate it to the Remote State then I can do Terraform init and basically just confirm that I want the migration but I have to do it manually by executing `terraform init`
+
+If I want to access my Terraform State that currently exists in my AWS infrastructure I can actually do that locally bcs the State is not stored anymore on Jenkins but rather on a Shared remote backend as long as I have AWS credentials and everything configured to access the bucket 
+
+  - First in my local I will do `terraform init`
+
+  - Second I do `terraform state list` it will connect to the bucket and actually give me the list of the `resoruces` that have been created from the remote storage . So this way everyone can access this shared remote state of Terraform 
 
 
 
