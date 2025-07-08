@@ -1,0 +1,20 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: monitoring-node-app
+  labels:
+    release: prometheus-monitoring
+    app: nodeapp
+spec:
+  endpoints:
+  - path: /metrics
+    port: service
+    targetPort: 3000
+  selector:
+    matchLabels:
+      app: nodeapp
+  namespaceSelector:
+    matchNames:
+      - default
+
+

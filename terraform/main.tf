@@ -1,11 +1,11 @@
-terraform {
-   required_version = ">= 0.12"
-  backend "s3" {
-    bucket = "bucket-for-terraform-test-1"
-    key = "myapp/state.tfstate"
-    region = "us-west-1"
-  }
-}
+# terraform {
+#    required_version = ">= 0.12"
+#   backend "s3" {
+#     bucket = "bucket-for-terraform-test-1"
+#     key = "myapp/state.tfstate"
+#     region = "us-west-1"
+#   }
+# }
 
 resource "aws_vpc" "my-vpc" {
   cidr_block = var.cidr_block
